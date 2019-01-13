@@ -11,7 +11,7 @@ object Main {
 }
 
 
-/* 
+/*
 type ('k 'v) env= {
   parent : null | ('k 'v) env ;
   bindings : ('k 'v) map
@@ -36,11 +36,8 @@ enum Commands {
 enum Vals {
   case ERROR
   case UNIT;
-  case INT(val sign: Char, val content: Int) {
-    def hello = "stopper"
-  }
+  case INT(val sign: Char, val content: Int)
   case BOOL(val content: Boolean)
   case STR(val content: String)
   case ID(val content: String)
 }
-
