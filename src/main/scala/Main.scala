@@ -1,4 +1,4 @@
-package io.github.mapogolions.cs.buffalo
+package io.github.mapogolions.cs305.buffalo
 
 
 object Main {
@@ -10,41 +10,37 @@ object Main {
 
 }
 
+
+/* 
+type ('k 'v) env= {
+  parent : null | ('k 'v) env ;
+  bindings : ('k 'v) map
+}
+ */
+
+trait Env
+case object Blank extends Env
+case class Scope(val bindings: Map[String, Vals]) extends Env
+
+enum Commands {
+  case PUSH(val content: Vals)
+  case POP
+  case DIV
+  case MUL
+  case SUB
+  case ADD
+  case BIND
+  case QUIT
+}
+
 enum Vals {
-  case INT(val sign: Char, val content: Int)
-  case BOOL(val content: Boolean)
-  case STRING(val content: String)
-  case ID(val content: String)
   case ERROR
+  case UNIT;
+  case INT(val sign: Char, val content: Int) {
+    def hello = "stopper"
+  }
+  case BOOL(val content: Boolean)
+  case STR(val content: String)
+  case ID(val content: String)
 }
 
-
-
-/* object Parser {
-  type Stack = List[Vals]
-  import Vals._
-
-  def eval(xs: List[String], stk: Stack): Stack = xs match {
-    case "push" :: t => ???
-    case "pop" :: t => eval(t, Stack.pop(stk))
-    case "add" :: t => eval(t, Stack.add(stk))
-    case _ => sys.error("Invalid command")
-  }
-}
-
-object Stack {
-  import Vals._
-  type Stack = List[Vals]
-
-  // TODO: Need implement support for bindings Names
-  def add(xs: Stack) = xs match {
-    case INT(a) :: INT(b) :: t => INT(a + b) :: t
-    case _ => Vals.ERROR :: xs
-  }
-
-  def pop(xs: Stack) = xs match {
-    case Nil => Vals.ERROR :: xs
-    case _ :: t => t
-  }
-  def empty = Nil
-} */
