@@ -4,6 +4,8 @@ import io.github.mapogolions.cs305.buffalo.Vals
 
 
 enum Commands {
+  case SWAP
+  case NEG
   case REM
   case PUSH(val content: Vals)
   case POP

@@ -4,6 +4,16 @@ import io.github.mapogolions.cs305.buffalo.Vals._
 
 
 class Stack(val xs: List[Vals]) {
+  def swap = xs match {
+    case a :: b :: t => Stack(b :: a :: t)
+    case _ => Stack(ERROR :: xs)
+  }
+
+  def neg = xs match {
+    case INT(a) :: t => Stack(INT(-a) :: t)
+    case _ => Stack(ERROR :: xs)
+  }
+
   // TODO: Add support for bind!
   def add = xs match {
     case INT(a) :: INT(b) :: t => Stack(INT(a + b) :: t)

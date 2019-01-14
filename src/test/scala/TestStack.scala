@@ -6,23 +6,70 @@ import io.github.mapogolions.cs305.buffalo.Stack
 
 
 class TestStack {
-  // @Test def TestRemStack: Unit = {
-  //   assertEquals(
-  //     Stack.rem(List(INT(5), INT(8))),List(INT(3))
-  //   )
-  //   assertEquals(
-  //     Stack.rem(List(INT(8), INT(5))),List(INT(5))
-  //   )
-  //   assertEquals(
-  //     Stack.rem(List(INT(9))), List(ERROR, INT(9))
-  //   )
-  //   assertEquals(
-  //     Stack.rem(List(INT(0), INT(2))), List(ERROR, INT(0), INT(2))
-  //   )
-  //   assertEquals(
-  //     Stack.rem(List(INT(2), INT(0), UNIT)), List(INT(0), UNIT)
-  //   )
-  // }
+  @Test def TestSwapStack: Unit = {
+    assertEquals(
+      Stack(ID("user") :: UNIT :: Nil).swap,
+      Stack(UNIT :: ID("user") :: Nil)
+    )
+    assertEquals(
+      Stack(Nil).swap,
+      Stack(ERROR :: Nil)
+    )
+    assertEquals(
+      Stack(UNIT:: Nil).swap,
+      Stack(ERROR :: UNIT :: Nil)
+    )
+    assertEquals(
+      Stack(BOOL(true) :: BOOL(false) :: Nil).swap,
+      Stack(BOOL(false) :: BOOL(true) :: Nil)
+    )
+  }
+
+  @Test def TestNegStack: Unit = {
+    assertEquals(
+      Stack(UNIT :: Nil).neg,
+      Stack(List(ERROR, UNIT))
+    )
+    assertEquals(
+      Stack(Nil).neg,
+      Stack(List(ERROR))
+    )
+    assertEquals(
+      Stack(List(INT(-10))).neg,
+      Stack(List(INT(10)))
+    )
+    assertEquals(
+      Stack(List(INT(0))).neg,
+      Stack(List(INT(0)))
+    )
+    assertEquals(
+      Stack(List(INT(10))).neg,
+      Stack(List(INT(-10)))
+    )
+  }
+
+  @Test def TestRemStack: Unit = {
+    assertEquals(
+      Stack(List(INT(5), INT(8))).rem,
+      Stack(List(INT(3)))
+    )
+    assertEquals(
+      Stack(List(INT(8), INT(5))).rem,
+      Stack(List(INT(5)))
+    )
+    assertEquals(
+      Stack(List(INT(9))).rem,
+      Stack(List(ERROR, INT(9)))
+    )
+    assertEquals(
+      Stack(List(INT(0), INT(2))).rem,
+      Stack(List(ERROR, INT(0), INT(2)))
+    )
+    assertEquals(
+      Stack(List(INT(2), INT(0), UNIT)).rem,
+      Stack(List(INT(0), UNIT))
+    )
+  }
 
   @Test def TestDivStack: Unit = {
     assertEquals(
