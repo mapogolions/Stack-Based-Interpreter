@@ -6,6 +6,26 @@ class Test1 {
   import Vals._
   import Commands._
 
+
+  @Test def TestExec: Unit = {
+    // attempt remove from empty stack
+    assertEquals(
+      Ops.exec(
+        List(POP),
+        Nil
+      ),
+      List(ERROR)
+    )
+
+    assertEquals(
+      Ops.exec(
+        List(POP),
+        List(UNIT, BOOL(true))
+      ),
+      List(BOOL(true))
+    )
+  }
+
   @Test def TestParseCommands: Unit = {
     assertEquals(Ops.parseCommands(Nil), Nil)
 
@@ -24,10 +44,10 @@ class Test1 {
         )
       ),
       List(
-        PUSH(INT('+', 10)),
+        PUSH(INT(10)),
         PUSH(ID("a")),
         PUSH(ID("name1")),
-        PUSH(INT('-', 10))
+        PUSH(INT(-10))
       )
     );
 
@@ -71,7 +91,7 @@ class Test1 {
   }
 
   @Test def TestParseLiteral: Unit = {
-    assertEquals(Ops.parseLiteral("-30"), Vals.INT('-', 30))
+    assertEquals(Ops.parseLiteral("-30"), Vals.INT(-30))
     assertEquals(Ops.parseLiteral("-30l"), Vals.ERROR)
     assertEquals(Ops.parseLiteral(":error:"), Vals.ERROR)
     assertEquals(Ops.parseLiteral(":false:"), Vals.BOOL(false))
@@ -82,7 +102,7 @@ class Test1 {
     assertEquals(Ops.parseLiteral("1name"), Vals.ERROR)
     assertEquals(Ops.parseLiteral("user_name"), Vals.ERROR)
     assertEquals(Ops.parseLiteral("$some"), Vals.ERROR)
-    assertEquals(Ops.parseLiteral("30"), Vals.INT('+', 30))
+    assertEquals(Ops.parseLiteral("30"), Vals.INT(30))
     assertEquals(Ops.parseLiteral("30.2"), Vals.ERROR)
     assertEquals(Ops.parseLiteral("-30.2"), Vals.ERROR)
   }
@@ -110,10 +130,10 @@ class Test1 {
   }
 
   @Test def TestParseInt: Unit = {
-    assertEquals(Ops.parseInt("123", '+'), Vals.INT('+', 123))
-    assertEquals(Ops.parseInt("34", '-'), Vals.INT('-', 34))
-    assertEquals(Ops.parseInt("34i", '-'), Vals.ERROR)
-    assertEquals(Ops.parseInt("03", '-'), Vals.INT('-', 3))
+    assertEquals(Ops.parseInt("123", 1), Vals.INT(123))
+    assertEquals(Ops.parseInt("34", -1), Vals.INT(-34))
+    assertEquals(Ops.parseInt("34i", -1), Vals.ERROR)
+    assertEquals(Ops.parseInt("03",  -1), Vals.INT(-3))
   }
 
   @Test def TestCheckChars: Unit = {

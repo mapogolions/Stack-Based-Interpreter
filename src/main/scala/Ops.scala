@@ -7,8 +7,39 @@ object Stack {
   import Commands._
   type Stack = List[Vals]
 
+  def push(v: Vals, xs: Stack) = v :: xs
+
   def pop(xs: Stack) = xs match {
     case h :: t => t
+    case _ => ERROR :: xs
+  }
+
+  // TODO: Add support for bind!
+  def add(xs: Stack) = xs match {
+    case INT(a) :: INT(b) :: t => INT(a + b) :: t
+    case _ => ERROR :: xs
+  }
+  // TODO: Add support for bind!
+  def sub(xs: Stack) = xs match {
+    case INT(a) :: INT(b) :: t => INT(b - a) :: t
+    case _ => ERROR :: xs
+  }
+
+  // TODO: Add support for bind!
+  def mul(xs: Stack) = xs match {
+    case INT(a) :: INT(b) :: t => INT(a * b) :: t
+    case _ => ERROR :: xs
+  }
+
+  // TODO: Add support for bind!
+  def div(xs: Stack) = xs match {
+    case INT(a) :: INT(b) :: t if (a != 0) => INT(b / a) :: t
+    case _ => ERROR :: xs
+  }
+
+  // TODO: Add support for bind!
+  def rem(xs: Stack) = xs match {
+    case INT(a) :: INT(b) :: t if (a != 0) => INT(b % a) :: t
     case _ => ERROR :: xs
   }
 }
@@ -21,11 +52,17 @@ object Ops {
   // Interpreter
   def exec(cmds: List[Commands], stack: Stack): Stack =
     cmds match {
+      case PUSH(v) :: t => exec(t, Stack.push(v, stack))
       case POP :: t => exec(t, Stack.pop(stack))
-      case _ => Nil
+      case ADD :: t => exec(t, Stack.add(stack))
+      case SUB :: t => exec(t, Stack.sub(stack))
+      case MUL :: t => exec(t, Stack.mul(stack))
+      case DIV :: t => exec(t, Stack.div(stack))
+      case REM :: t => exec(t, Stack.rem(stack))
+      case _ => stack
     }
 
-  // Parse strings into commands list (TODO: maybe add :unit: => PUSH(UNIT))
+  // Parse strings into commands list
   def parseCommands(xs: List[String]): List[Commands] = xs match {
     case Nil => Nil
     case line :: ls => line.split(' ').toList match {
@@ -46,10 +83,10 @@ object Ops {
 
   def parseLiteral(src: String): Vals =
     explode(src) match {
-      case '-' :: t => parseInt(implode(t), '-')
+      case '-' :: t => parseInt(implode(t), -1)
       case '"' :: t => if (checkASCII(t)) STR(stripQuotes(src)) else ERROR
       case ':' :: t => parseBool(src)
-      case h :: t => if (checkChar(digits, h)) parseInt(src, '+') else parseID(src)
+      case h :: t => if (checkChar(digits, h)) parseInt(src, 1) else parseID(src)
       case _ => ERROR
     }
 
@@ -60,8 +97,8 @@ object Ops {
       case _ => ERROR
     }
 
-  def parseInt(src: String, sign: Char): Vals =
-    if (checkChars(digits, src.toList)) INT(sign, src.toInt)
+  def parseInt(src: String, sign: Int): Vals =
+    if (checkChars(digits, src.toList)) INT(sign * src.toInt)
     else ERROR
 
   def parseBool(src: String): Vals = src.trim match {

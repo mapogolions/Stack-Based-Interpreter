@@ -23,6 +23,7 @@ case object Blank extends Env
 case class Scope(val bindings: Map[String, Vals]) extends Env
 
 enum Commands {
+  case REM
   case PUSH(val content: Vals)
   case POP
   case DIV
@@ -36,7 +37,7 @@ enum Commands {
 enum Vals {
   case ERROR
   case UNIT;
-  case INT(val sign: Char, val content: Int)
+  case INT(val content: Int)
   case BOOL(val content: Boolean)
   case STR(val content: String)
   case ID(val content: String)
