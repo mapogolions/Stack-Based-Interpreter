@@ -4,6 +4,13 @@ import io.github.mapogolions.cs305.buffalo.Vals
 
 
 enum Commands {
+  case BIND
+  case IF
+  case LESSTHAN
+  case EQUAL
+  case NOT
+  case OR
+  case AND
   case SWAP
   case NEG
   case REM
@@ -13,6 +20,5 @@ enum Commands {
   case MUL
   case SUB
   case ADD
-  case BIND
   case QUIT
 }
