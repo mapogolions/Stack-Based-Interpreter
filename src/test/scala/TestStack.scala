@@ -12,7 +12,7 @@ class TestStack {
       * Shared reference (the different scope)
       * let b = BOOL(true)
       * {
-          let a = b
+      *  let a = b
       * }
       */
     assertEquals(
@@ -100,258 +100,298 @@ class TestStack {
   }
 
   @Test def TestIfStack: Unit = {
-    assertEquals(
-      Stack(STR("one") :: STR("two") :: BOOL(false) :: Nil).cond,
-      Stack(STR("one") :: Nil)
+    val env = Scope(
+      Map("a" -> BOOL(true)),
+      Scope(
+        Map("b" -> BOOL(false)),
+        Empty
+      )
     )
     assertEquals(
-      Stack(STR("one") :: STR("two") :: BOOL(true) :: Nil).cond,
-      Stack(STR("two") :: Nil)
+      Stack(STR("one") :: STR("two") :: ID("b") :: Nil).cond(env),
+      Stack(STR("one") :: Nil) -> env
     )
     assertEquals(
-      Stack(STR("one") :: UNIT :: Nil).cond,
-      Stack(ERROR :: STR("one") :: UNIT :: Nil)
+      Stack(STR("one") :: STR("two") :: ID("a") :: Nil).cond(env),
+      Stack(STR("two") :: Nil) -> env
     )
     assertEquals(
-      Stack(STR("one") :: Nil).cond,
-      Stack(ERROR :: STR("one") :: Nil)
-    )
-    assertEquals(
-      Stack(Nil).cond,
-      Stack(ERROR :: Nil)
+      Stack(STR("one") :: UNIT :: Nil).cond(env),
+      Stack(ERROR :: STR("one") :: UNIT :: Nil) -> env
     )
   }
 
   @Test def TestLessThanStack: Unit = {
-    assertEquals(
-      Stack(UNIT :: ID("name") :: Nil).lessThan,
-      Stack(ERROR :: UNIT :: ID("name") :: Nil)
+    val env = Scope(
+      Map("a" -> INT(10)),
+      Scope(
+        Map("b" -> INT(10)),
+        Scope(
+          Map("c" -> INT(2)),
+          Empty
+        )
+      )
     )
     assertEquals(
-      Stack(Nil).lessThan,
-      Stack(ERROR :: Nil)
+      Stack(ID("a") :: ID("b") :: STR(".") :: Nil).lessThan(env),
+      Stack(BOOL(false) :: STR(".") :: Nil) -> env
     )
     assertEquals(
-      Stack(INT(7) :: INT(7) :: Nil).lessThan,
-      Stack(BOOL(false) :: Nil)
+      Stack(INT(-1) :: ID("d"):: Nil).lessThan(env),
+      Stack(ERROR :: INT(-1) :: ID("d") :: Nil) -> env
     )
     assertEquals(
-      Stack(INT(8) :: INT(7) :: Nil).lessThan,
-      Stack(BOOL(true) :: Nil)
+      Stack(ID("a") :: ID("c") :: Nil).lessThan(env),
+      Stack(BOOL(true) :: Nil) -> env
     )
   }
 
   @Test def TestEqualityStack: Unit = {
-    assertEquals(
-      Stack(Nil).equality,
-      Stack(ERROR:: Nil)
+    val env = Scope(
+      Map("a" -> INT(10)),
+      Scope(
+        Map("b" -> INT(10)),
+        Scope(
+          Map("c" -> INT(2)),
+          Empty
+        )
+      )
     )
     assertEquals(
-      Stack(INT(-1) :: Nil).equality,
-      Stack(ERROR :: INT(-1) :: Nil)
+      Stack(ID("a") :: ID("b") :: STR(".") :: Nil).equality(env),
+      Stack(BOOL(true) :: STR(".") :: Nil) -> env
     )
     assertEquals(
-      Stack(INT(-1) :: INT(1) :: Nil).equality,
-      Stack(BOOL(false) :: Nil)
+      Stack(INT(-1) :: ID("d"):: Nil).equality(env),
+      Stack(ERROR :: INT(-1) :: ID("d") :: Nil) -> env
     )
     assertEquals(
-      Stack(INT(-1) :: INT(-1) :: Nil).equality,
-      Stack(BOOL(true) :: Nil)
+      Stack(ID("a") :: ID("c") :: Nil).equality(env),
+      Stack(BOOL(false) :: Nil) -> env
     )
   }
 
   @Test def TestNotStack: Unit = {
-    assertEquals(
-      Stack(BOOL(false) :: Nil).not,
-      Stack(BOOL(true) :: Nil)
+    val env = Scope(
+      Map("a" -> BOOL(true)),
+      Scope(
+        Map("b" -> STR("hello world")),
+        Scope(
+          Map("c" -> BOOL(false)),
+          Empty
+        )
+      )
     )
     assertEquals(
-      Stack(BOOL(true) :: Nil).not,
-      Stack(BOOL(false) :: Nil)
+      Stack(BOOL(false) :: Nil).not(env),
+      Stack(BOOL(true) :: Nil) -> env
     )
     assertEquals(
-      Stack(ID("response") :: BOOL(true) :: Nil).not,
-      Stack(ERROR :: ID("response") :: BOOL(true) :: Nil)
+      Stack(ID("a") :: STR("text"):: Nil).not(env),
+      Stack(BOOL(false) :: STR("text"):: Nil) -> env
     )
-
     assertEquals(
-      Stack(Nil).not,
-      Stack(ERROR :: Nil)
+      Stack(ID("b"):: Nil).not(env),
+      Stack(ERROR :: ID("b") :: Nil) -> env
     )
   }
 
   @Test def TestOrStack: Unit = {
-    assertEquals(
-      Stack(UNIT :: BOOL(true) :: Nil).or,
-      Stack(ERROR :: UNIT :: BOOL(true) :: Nil)
+    val env = Scope(
+      Map("a" -> BOOL(true)),
+      Scope(
+        Map("b" -> STR("hello world")),
+        Scope(
+          Map("c" -> BOOL(false)),
+          Empty
+        )
+      )
     )
     assertEquals(
-      Stack(BOOL(true) :: Nil).or,
-      Stack(ERROR :: BOOL(true) :: Nil)
+      Stack(ID("c") :: BOOL(true) :: Nil).or(env),
+      Stack(BOOL(true) :: Nil) -> env
     )
     assertEquals(
-      Stack(BOOL(true) :: BOOL(true) :: Nil).or,
-      Stack(BOOL(true) :: Nil)
-    )
-    assertEquals(
-      Stack(BOOL(true) :: BOOL(false) :: Nil).or,
-      Stack(BOOL(true) :: Nil)
+      Stack(BOOL(false) :: ID("a"):: Nil).or(env),
+      Stack(BOOL(true) :: Nil) -> env
     )
   }
 
   @Test def TestAndStack: Unit = {
-    assertEquals(
-      Stack(UNIT :: BOOL(true) :: Nil).and,
-      Stack(ERROR :: UNIT :: BOOL(true) :: Nil)
+    val env = Scope(
+      Map("a" -> BOOL(true)),
+      Scope(
+        Map("b" -> STR("hello world")),
+        Scope(
+          Map("c" -> BOOL(false)),
+          Empty
+        )
+      )
     )
     assertEquals(
-      Stack(BOOL(true) :: Nil).and,
-      Stack(ERROR :: BOOL(true) :: Nil)
+      Stack(ID("a") :: ID("c"):: Nil).and(env),
+      Stack(BOOL(false) :: Nil) -> env
     )
     assertEquals(
-      Stack(BOOL(true) :: BOOL(true) :: Nil).and,
-      Stack(BOOL(true) :: Nil)
+      Stack(ID("a") :: BOOL(true):: Nil).and(env),
+      Stack(BOOL(true) :: Nil) -> env
     )
     assertEquals(
-      Stack(BOOL(true) :: BOOL(false) :: Nil).and,
-      Stack(BOOL(false) :: Nil)
+      Stack(ID("a") :: ID("b"):: Nil).and(env),
+      Stack(ERROR :: ID("a") :: ID("b"):: Nil) -> env
     )
   }
 
   @Test def TestSwapStack: Unit = {
     assertEquals(
-      Stack(ID("user") :: UNIT :: Nil).swap,
-      Stack(UNIT :: ID("user") :: Nil)
+      Stack(ID("user") :: UNIT :: Nil).swap(Empty),
+      Stack(UNIT :: ID("user") :: Nil) -> Empty
     )
     assertEquals(
-      Stack(Nil).swap,
-      Stack(ERROR :: Nil)
+      Stack(Nil).swap(Empty),
+      Stack(ERROR :: Nil) -> Empty
     )
     assertEquals(
-      Stack(UNIT:: Nil).swap,
-      Stack(ERROR :: UNIT :: Nil)
+      Stack(UNIT:: Nil).swap(Empty),
+      Stack(ERROR :: UNIT :: Nil) -> Empty
     )
     assertEquals(
-      Stack(BOOL(true) :: BOOL(false) :: Nil).swap,
-      Stack(BOOL(false) :: BOOL(true) :: Nil)
+      Stack(BOOL(true) :: BOOL(false) :: Nil).swap(Empty),
+      Stack(BOOL(false) :: BOOL(true) :: Nil) -> Empty
     )
   }
 
-  @Test def TestNegStack: Unit = {
-    assertEquals(
-      Stack(UNIT :: Nil).neg,
-      Stack(List(ERROR, UNIT))
+ @Test def TestNegStack: Unit = {
+    val env = Scope(
+      Map("a" -> INT(10)),
+      Scope(
+        Map("b" -> INT(5)),
+        Scope(
+          Map("c" -> INT(0)),
+          Empty
+        )
+      )
     )
     assertEquals(
-      Stack(Nil).neg,
-      Stack(List(ERROR))
+      Stack(UNIT :: Nil).neg(env),
+      Stack(ERROR :: UNIT :: Nil) -> env
     )
     assertEquals(
-      Stack(List(INT(-10))).neg,
-      Stack(List(INT(10)))
+      Stack(Nil).neg(env),
+      Stack(ERROR :: Nil) -> env
     )
     assertEquals(
-      Stack(List(INT(0))).neg,
-      Stack(List(INT(0)))
+      Stack(INT(-10) :: Nil).neg(env),
+      Stack(INT(10) :: Nil) -> env
     )
     assertEquals(
-      Stack(List(INT(10))).neg,
-      Stack(List(INT(-10)))
+      Stack(ID("a") :: Nil).neg(env),
+      Stack(INT(-10) :: Nil) -> env
+    )
+    assertEquals(
+      Stack(ID("c") :: Nil).neg(env),
+      Stack(INT(0) :: Nil) -> env
     )
   }
 
   @Test def TestRemStack: Unit = {
-    assertEquals(
-      Stack(List(INT(5), INT(8))).rem,
-      Stack(List(INT(3)))
+     val env = Scope(
+      Map("a" -> INT(10)),
+      Scope(
+        Map("b" -> INT(5)),
+        Scope(
+          Map("c" -> INT(0)),
+          Empty
+        )
+      )
     )
     assertEquals(
-      Stack(List(INT(8), INT(5))).rem,
-      Stack(List(INT(5)))
+      Stack(INT(5) :: INT(8) :: Nil).rem(Empty),
+      Stack(INT(3) :: Nil) -> Empty
     )
     assertEquals(
-      Stack(List(INT(9))).rem,
-      Stack(List(ERROR, INT(9)))
+      Stack(ID("c") :: INT(7):: Nil).rem(env),
+      Stack(ERROR :: ID("c") :: INT(7) :: Nil) -> env
     )
     assertEquals(
-      Stack(List(INT(0), INT(2))).rem,
-      Stack(List(ERROR, INT(0), INT(2)))
-    )
-    assertEquals(
-      Stack(List(INT(2), INT(0), UNIT)).rem,
-      Stack(List(INT(0), UNIT))
+      Stack(ID("b") :: INT(7):: Nil).rem(env),
+      Stack(INT(2) :: Nil) -> env
     )
   }
 
   @Test def TestDivStack: Unit = {
+    val env = Scope(
+      Map("a" -> INT(10)),
+      Scope(
+        Map("b" -> INT(5)),
+        Scope(
+          Map("c" -> INT(0)),
+          Empty
+        )
+      )
+    )
+    // division by zero
     assertEquals(
-      Stack(List(INT(0), BOOL(true))).div,
-      Stack( List(ERROR, INT(0), BOOL(true)) )
+      Stack(ID("c") :: ID("b") :: Nil).div(env),
+      Stack(ERROR :: ID("c") :: ID("b") :: Nil) -> env
     )
     assertEquals(
-      Stack(List(INT(-1), INT(0))).div,
-      Stack( List(INT(0)) )
+      Stack(ID("b") :: ID("a") :: Nil).div(env),
+      Stack(INT(2) :: Nil) -> env
     )
     assertEquals(
-      Stack(List(INT(5), INT(7))).div,
-      Stack( List(INT(1)) )
+      Stack(INT(5) :: INT(10):: Nil).div(Empty),
+      Stack(INT(2) :: Nil) -> Empty
     )
     assertEquals(
-      Stack(List(INT(8), INT(5))).div,
-      Stack( List(INT(0)) )
+      Stack(INT(0) :: INT(10):: Nil).div(Empty),
+      Stack(ERROR :: INT(0) :: INT(10) :: Nil) -> Empty
     )
   }
+
   @Test def TestMulStack: Unit = {
     assertEquals(
-      Stack(Nil).mul,
-      Stack( List(ERROR) )
+      Stack(Nil).mul(Empty),
+      Stack(ERROR :: Nil) -> Empty
     )
     assertEquals(
-      Stack(List(INT(0), BOOL(true))).mul,
-      Stack( List(ERROR, INT(0), BOOL(true)) )
-    )
-    assertEquals(
-      Stack(List(INT(0), INT(-1))).mul,
-      Stack( List(INT(0)) )
+      Stack(ID("in") :: ID("out") :: Nil)
+        .mul(Scope(Map("in" -> INT(10)), Scope(Map("out" -> BOOL(false)), Empty))),
+      (
+        Stack(ERROR :: ID("in") :: ID("out") :: Nil), 
+        Scope(Map("in" -> INT(10)), Scope(Map("out" -> BOOL(false)), Empty))
+      )
     )
   }
 
   @Test def TestSubStack: Unit = {
     assertEquals(
-      Stack(List(INT(8), INT(5))).sub,
-      Stack( List(INT(-3)) )
-    )
-
-    assertEquals(
-      Stack(List(INT(0), BOOL(true))).sub,
-      Stack( List(ERROR, INT(0), BOOL(true)) )
+      Stack(ID("a") :: ID("b") :: Nil).sub(Scope(Map("a" -> INT(10), "b" -> INT(-15)), Empty)),
+      Stack(INT(-25) :: Nil) -> Scope(Map("a" -> INT(10), "b" -> INT(-15)), Empty)
     )
     assertEquals(
-      Stack(List(INT(0), INT(-1))).sub,
-      Stack( List(INT(-1)) )
+      Stack(ID("in") :: ID("out") :: Nil)
+        .sub(Scope(Map("in" -> INT(10)), Scope(Map("out" -> INT(-15)), Empty))),
+      Stack(INT(-25) :: Nil) -> Scope(Map("in" -> INT(10)), Scope(Map("out" -> INT(-15)), Empty))
     )
   }
 
   @Test def TestAddStack: Unit = {
     assertEquals(
-      Stack( List(INT(-10), INT(-100), BOOL(false)) ).add,
-      Stack( List(INT(-110), BOOL(false)) )
+      Stack(INT(-10) :: INT(-100) :: BOOL(false) :: Nil ).add(Empty),
+      Stack( List(INT(-110), BOOL(false))) -> Empty
     )
     assertEquals(
-      Stack( List(INT(-10), INT(20)) ).add,
-      Stack( List(INT(10)) )
+      Stack(INT(-10) :: ID("a") :: Nil).add(Scope(Map("a" -> INT(-23)), Empty)),
+      Stack(INT(-33) :: Nil) -> Scope(Map("a" -> INT(-23)), Empty)
     )
     assertEquals(
-      Stack( List(INT(-10), BOOL(true)) ).add,
-      Stack( List(ERROR, INT(-10), BOOL(true)) )
+      Stack(ID("b") :: INT(-1) :: Nil ).add(Scope(Map("b" -> INT(34)), Empty)),
+      Stack(INT(33) :: Nil) -> Scope(Map("b" -> INT(34)), Empty)
     )
     assertEquals(
-      Stack(List(ERROR, UNIT)).add,
-      Stack( List(ERROR, ERROR, UNIT) )
-    )
-    assertEquals(
-      Stack(List()).add,
-      Stack(List(ERROR))
+      Stack(ERROR :: UNIT :: Nil).add(Empty),
+      Stack(ERROR :: ERROR :: UNIT :: Nil) -> Empty
     )
   }
 }

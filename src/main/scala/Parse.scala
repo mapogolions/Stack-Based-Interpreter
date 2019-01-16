@@ -16,6 +16,8 @@ object Parse {
       case "mul" :: t     => MUL :: commands(ls)
       case "div" :: t     => DIV :: commands(ls)
       case "bind" :: t    => BIND :: commands(ls)
+      case "let" :: t     => LET :: commands(ls)
+      case "end" :: t     => END :: commands(ls)
       case ":true:" :: t  => PUSH(BOOL(true)) :: commands(ls)
       case ":false:" :: t => PUSH(BOOL(false)) :: commands(ls)
       case ":error:" :: t => PUSH(ERROR) :: commands(ls)
@@ -33,7 +35,6 @@ object Parse {
       case _ => ERROR
     }
 
-
   def identifier(src: String): Vals =
     explode(src) match {
       case h :: t if (checkChar(alphabets, h) && checkChars(alphanums, t)) => ID(src)
@@ -49,7 +50,6 @@ object Parse {
     case ":false:" => BOOL(false)
     case _ => ERROR
   }
-
 
   def stripNewline(src: String): String = {
     def loop(xs: List[Char]): List[Char] = xs match {

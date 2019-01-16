@@ -14,76 +14,100 @@ class Stack(val xs: List[Vals]) {
     case _ => (Stack(ERROR :: xs), env)
   }
 
-  def cond = xs match {
-    case _ :: b :: BOOL(true) :: t => Stack(b :: t)
-    case a :: _ :: BOOL(false) :: t => Stack(a :: t)
+  def cond(env: Env) = xs match {
+    case _ :: b :: BOOL(true) :: t => Stack(b :: t) -> env
+    case a :: _ :: BOOL(false) :: t => Stack(a :: t) -> env
+    case a :: b :: ID(name) :: t => env.get(name) match {
+      case Some(BOOL(flag)) => (if (flag) Stack(b :: t) else Stack(a :: t)) -> env
+      case _ => Stack(ERROR :: xs) -> env
+    }
+    case _ => Stack(ERROR :: xs) -> env
+  }
+
+  // unary
+  def not(env: Env) = xs match {
+    case BOOL(a) :: t => Stack(BOOL(!a) :: t) -> env
+    case ID(name) :: t => env.get(name) match {
+      case Some(BOOL(a)) => Stack(BOOL(!a) :: t) -> env
+      case _ => Stack(ERROR :: xs) -> env
+    }
+    case _ => Stack(ERROR :: xs) -> env
+  }
+
+  def neg(env: Env) = xs match {
+    case INT(a) :: t => Stack(INT(-a) :: t) -> env
+    case ID(name) :: t => env.get(name) match {
+      case Some(INT(a)) => Stack(INT(-a) :: t) -> env
+      case _ => Stack(ERROR :: xs) -> env
+    }
+    case _ => Stack(ERROR :: xs) -> env
+  }
+
+  // binary 
+  def swap(env: Env) = xs match {
+    case a :: b :: t => Stack(b :: a :: t) -> env
+    case _ => Stack(ERROR :: xs) -> env
+  }
+
+  def binary(f: ((Vals, Vals)) => Vals) = xs match {
+    case a :: b :: t if (f(a -> b) != ERROR) => Stack(f(a -> b) :: t)
     case _ => Stack(ERROR :: xs)
   }
 
-  def lessThan = xs match {
-    case INT(a) :: INT(b) :: t => Stack(BOOL(b < a) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
+  def binaryBool(f: (Boolean, Boolean) => Vals, env: Env) = binary {
+    (a, b) => (a, b) match {
+      case (BOOL(v1), BOOL(v2)) => f(v1, v2)
+      case (ID(name1), ID(name2)) =>
+        (env.get(name1), env.get(name2)) match {
+          case (Some(BOOL(v1)), Some(BOOL(v2))) => f(v1, v2)
+          case _ => ERROR
+        }
+      case (ID(name), BOOL(v2)) =>
+        env.get(name) match {
+          case Some(BOOL(v1)) => f(v1, v2)
+          case _ => ERROR
+        }
+      case (BOOL(v1), ID(name)) => 
+        env.get(name) match {
+          case Some(BOOL(v2)) => f(v1, v2)
+          case _ => ERROR
+        }
+      case _ => ERROR
+    }
+  } -> env
 
-  def equality = xs match {
-    case INT(a) :: INT(b) :: t => Stack(BOOL(a == b) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
+  def or(env: Env) = binaryBool((a, b) => BOOL(a || b), env)
+  def and(env: Env) = binaryBool((a, b) => BOOL(a && b), env)
 
-  def not = xs match {
-    case BOOL(a) :: t => Stack(BOOL(!a) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
+  def binaryInt(f: (Int, Int) => Vals, env: Env) = binary {
+    (a, b) => (a, b) match {
+      case (INT(v1), INT(v2)) => f(v1, v2)
+      case (ID(name1), ID(name2)) =>
+        (env.get(name1), env.get(name2)) match {
+          case (Some(INT(a)), Some(INT(b))) => f(a, b)
+          case _ => ERROR
+        }
+      case (ID(name), INT(v2)) =>
+        env.get(name) match {
+          case Some(INT(v1)) => f(v1, v2)
+          case _ => ERROR
+        }
+      case (INT(v1), ID(name)) => 
+        env.get(name) match {
+          case Some(INT(v2)) => f(v1, v2)
+          case _ => ERROR
+        }
+      case _ => ERROR
+    }
+  } -> env
 
-  def or = xs match {
-    case BOOL(a) :: BOOL(b) :: t => Stack(BOOL(a || b) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
-
-  def and = xs match {
-    case BOOL(a) :: BOOL(b) :: t => Stack(BOOL(a && b) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
-
-  def swap = xs match {
-    case a :: b :: t => Stack(b :: a :: t)
-    case _ => Stack(ERROR :: xs)
-  }
-
-  def neg = xs match {
-    case INT(a) :: t => Stack(INT(-a) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
-
-  // TODO: Add support for bind!
-  def add = xs match {
-    case INT(a) :: INT(b) :: t => Stack(INT(a + b) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
-
-  // TODO: Add support for bind!
-  def sub = xs match {
-    case INT(a) :: INT(b) :: t => Stack(INT(b - a) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
-
-  // TODO: Add support for bind!
-  def mul = xs match {
-    case INT(a) :: INT(b) :: t => Stack(INT(a * b) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
-
-  // TODO: Add support for bind!
-  def div = xs match {
-    case INT(a) :: INT(b) :: t if (a != 0) => Stack(INT(b / a) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
-
-  // TODO: Add support for bind!
-  def rem = xs match {
-    case INT(a) :: INT(b) :: t if (a != 0) => Stack(INT(b % a) :: t)
-    case _ => Stack(ERROR :: xs)
-  }
+  def lessThan(env: Env) = binaryInt((a, b) => BOOL(b < a), env)
+  def equality(env: Env) = binaryInt((a, b) => BOOL(a == b), env)
+  def add(env: Env) = binaryInt((a, b) => INT(a + b), env)
+  def sub(env: Env) = binaryInt((a, b) => INT(b - a), env)
+  def mul(env: Env) = binaryInt((a, b) => INT(a * b), env)
+  def div(env: Env) = binaryInt((a, b) => if (a != 0) INT(b / a) else ERROR, env)
+  def rem(env: Env) = binaryInt((a, b) => if (a != 0) INT(b % a) else ERROR, env)
 
   def push(v: Vals) = Stack(v :: xs)
   def pop = xs match {

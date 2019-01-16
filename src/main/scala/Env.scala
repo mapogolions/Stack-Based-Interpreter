@@ -1,6 +1,6 @@
 package io.github.mapogolions.cs305.buffalo
 
-import io.github.mapogolions.cs305.buffalo.Vals
+import io.github.mapogolions.cs305.buffalo.Vals._
 
 
 /*
