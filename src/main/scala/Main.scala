@@ -1,20 +1,47 @@
 package io.github.mapogolions.cs305.buffalo
 
+import io.github.mapogolions.cs305.buffalo.Vals._
+import io.github.mapogolions.cs305.buffalo.{ Env, Scope, Empty }
+import io.github.mapogolions.cs305.buffalo.Commands._
+import io.github.mapogolions.cs305.buffalo.Stack
+
 
 object Main {
-  def exec(in: String, out: String) = {
-      // Interpreter
-  // def exec(cmds: List[Commands], stack: Stack): Stack =
-  //   cmds match {
-  //     case PUSH(v) :: t => exec(t, Stack.push(v, stack))
-  //     case POP :: t => exec(t, Stack.pop(stack))
-  //     case ADD :: t => exec(t, Stack.add(stack))
-  //     case SUB :: t => exec(t, Stack.sub(stack))
-  //     case MUL :: t => exec(t, Stack.mul(stack))
-  //     case DIV :: t => exec(t, Stack.div(stack))
-  //     case REM :: t => exec(t, Stack.rem(stack))
-  //     case _ => stack
-  //   }
-    ???
-  }
+  // Interpreter
+  def exec(cmds: List[Commands], stack: Stack, env: Env): (Stack, Env) =
+    cmds match {
+      case PUSH(v) :: t => {
+        val (stk, ctx) = stack.push(v, env)
+        exec(t, stk, ctx)
+      }
+      case POP :: t => {
+        val (stk, ctx) = stack.pop(env)
+        exec(t, stk, ctx)
+      }
+      case ADD :: t => {
+        val (stk, ctx) = stack.add(env)
+        exec(t, stk, ctx)
+      }
+      case SUB :: t => {
+        val (stk, ctx) = stack.sub(env)
+        exec(t, stk, ctx)
+      }
+      case MUL :: t => {
+        val (stk, ctx) = stack.mul(env)
+        exec(t, stk, ctx)
+      }
+      case DIV :: t => {
+        val (stk, ctx) = stack.div(env)
+        exec(t, stk, ctx)
+      }
+      case REM :: t => {
+        val (stk, ctx) = stack.rem(env)
+        exec(t, stk, ctx)
+      }
+      case BIND ::t => {
+        val (stk, ctx) = stack.bind(env)
+        exec(t, stk, ctx)
+      }
+      case _ => stack -> env
+    }
 }

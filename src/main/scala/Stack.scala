@@ -109,10 +109,10 @@ class Stack(val xs: List[Vals]) {
   def div(env: Env) = binaryInt((a, b) => if (a != 0) INT(b / a) else ERROR, env)
   def rem(env: Env) = binaryInt((a, b) => if (a != 0) INT(b % a) else ERROR, env)
 
-  def push(v: Vals) = Stack(v :: xs)
-  def pop = xs match {
-    case h :: t => Stack(t)
-    case _ => Stack(ERROR :: xs)
+  def push(v: Vals, env: Env) = Stack(v :: xs) -> env
+  def pop(env: Env) = xs match {
+    case h :: t => Stack(t) -> env
+    case _ => Stack(ERROR :: xs) -> env
   }
 
   override def equals(that: Any): Boolean = that match {

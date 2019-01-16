@@ -22,7 +22,7 @@ object Parse {
       case ":false:" :: t => PUSH(BOOL(false)) :: commands(ls)
       case ":error:" :: t => PUSH(ERROR) :: commands(ls)
       case "quit" :: t    => QUIT :: commands(ls)
-      case _              => Nil
+      case _              => PUSH(ERROR) :: commands(ls)
     }
   }
 
