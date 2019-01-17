@@ -56,6 +56,39 @@ object Main {
         val (stack, ctx) = stacks.head.bind(env)
         exec(t, stack :: stacks.tail, ctx)
       }
+      case IF :: t => {
+        val (stack, ctx) = stacks.head.cond(env)
+        exec(t, stack :: stacks.tail, ctx)
+      }
+      case LESSTHAN :: t => {
+        val (stack, ctx) = stacks.head.lessThan(env)
+        exec(t, stack :: stacks.tail, ctx)
+      }
+      case EQUAL :: t => {
+        val (stack, ctx) = stacks.head.equality(env)
+        exec(t, stack :: stacks.tail, ctx)
+      }
+      case NOT :: t => {
+        val (stack, ctx) = stacks.head.not(env)
+        exec(t, stack :: stacks.tail, ctx)
+      }
+      case OR :: t => {
+        val (stack, ctx) = stacks.head.or(env)
+        exec(t, stack :: stacks.tail, ctx)
+      }
+      case AND :: t => {
+        val (stack, ctx) = stacks.head.and(env)
+        exec(t, stack :: stacks.tail, ctx)
+      }
+      case SWAP :: t => {
+        val (stack, ctx) = stacks.head.swap(env)
+        exec(t, stack :: stacks.tail, ctx)
+      }
+      case NEG :: t => {
+        val (stack, ctx) = stacks.head.neg(env)
+        exec(t, stack :: stacks.tail, ctx)
+      }
+      case QUIT :: t => stacks -> env
       case _ => stacks -> env
     }
 }
