@@ -15,10 +15,10 @@ class Stack(val xs: List[Vals]) {
   }
 
   def cond(env: Env) = xs match {
-    case _ :: b :: BOOL(true) :: t => Stack(b :: t) -> env
-    case a :: _ :: BOOL(false) :: t => Stack(a :: t) -> env
+    case a :: _ :: BOOL(true) :: t => Stack(a :: t) -> env
+    case _ :: b :: BOOL(false) :: t => Stack(b :: t) -> env
     case a :: b :: ID(name) :: t => env.get(name) match {
-      case Some(BOOL(flag)) => (if (flag) Stack(b :: t) else Stack(a :: t)) -> env
+      case Some(BOOL(flag)) => (if (flag) Stack(a :: t) else Stack(b :: t)) -> env
       case _ => Stack(ERROR :: xs) -> env
     }
     case _ => Stack(ERROR :: xs) -> env

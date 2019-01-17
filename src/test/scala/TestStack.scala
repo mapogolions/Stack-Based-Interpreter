@@ -109,11 +109,11 @@ class TestStack {
     )
     assertEquals(
       Stack(STR("one") :: STR("two") :: ID("b") :: Nil).cond(env),
-      Stack(STR("one") :: Nil) -> env
+      Stack(STR("two") :: Nil) -> env
     )
     assertEquals(
       Stack(STR("one") :: STR("two") :: ID("a") :: Nil).cond(env),
-      Stack(STR("two") :: Nil) -> env
+      Stack(STR("one") :: Nil) -> env
     )
     assertEquals(
       Stack(STR("one") :: UNIT :: Nil).cond(env),
