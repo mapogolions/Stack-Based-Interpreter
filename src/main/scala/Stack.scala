@@ -119,6 +119,7 @@ class Stack(val xs: List[Vals]) {
     case Stack(ys) if (ys == xs) => true
     case _ => false
   }
+  override def toString = s"Stack($xs)"
 }
 
 object Stack {
