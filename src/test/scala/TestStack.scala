@@ -7,12 +7,32 @@ import io.github.mapogolions.cs305.buffalo.{ Env, Scope, Empty }
 
 
 class TestStack {
-  // @Test def TestCallFunctionStack: Unit = {
-  //   assertEquals(
-  //     Stack().call(Empty),
-  //     Stack() -> Empty
-  //   )
-  // }
+  @Test def TestCallFunctionStack: Unit = {
+    assertEquals(
+      Stack(ID("inc") :: INT(10) :: Nil).callFunc(
+        Scope(
+          Map("inc" -> CLOSURE("inc", "n", PUSH(BOOL(true)) :: Nil, Empty)),
+          Empty
+        )
+      ),
+      (
+        PUSH(BOOL(true)) :: Nil, // body function
+        Stack(Nil),
+        Scope(                   // funtion scope + recur
+          Map("n" -> INT(10)),
+          Scope(
+            Map("inc" -> CLOSURE("inc", "n", PUSH(BOOL(true)) :: Nil, Empty)),
+            Empty
+          )
+        )
+      )
+    )
+    // call unbound function -> ERROR
+    assertEquals(
+      Stack(ID("inc") :: INT(10) :: Nil).callFunc(Empty),
+      (Nil, Stack(ERROR :: ID("inc") :: INT(10) :: Nil), Empty)
+    )
+  }
 
   @Test def TestBindStack: Unit = {
     /**

@@ -24,7 +24,7 @@ class TestInterpreterSkip {
         Empty
       ),
       (
-        PUSH(STR("hello")) :: PUSH(BOOL(false)) :: Nil,
+        PUSH(UNIT) :: PUSH(STR("hello")) :: PUSH(BOOL(false)) :: Nil,
         Scope(
           Map("inc" -> CLOSURE("inc", "n", PUSH(BOOL(true)) :: PUSH(ID("b")):: Nil, Empty)),
           Empty

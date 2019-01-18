@@ -8,16 +8,18 @@ import io.github.mapogolions.cs305.buffalo.Main
 class Stack(val xs: List[Vals]) {
   def callFunc(env: Env) = xs match {
     case ID(f) :: ERROR :: t => (Nil, Stack(ERROR :: xs), env)
-    case ID(f) :: ID(name) :: t => (env.get(f), env.get(name)) match {
-      case (Some(CLOSURE(_, arg, cmds, ctx)), Some(value)) =>
-        (cmds, Stack(), Scope(Map(arg -> value), ctx))
-      case _ => (Nil, Stack(ERROR :: xs), env)
-    }
-    case ID(f) :: value :: t => env.get(f) match {
-      case Some(CLOSURE(_, arg, cmds, ctx)) =>
-        (cmds, Stack(), Scope(Map(arg -> value), ctx))
-      case _ => (Nil, Stack(ERROR :: xs), env)
-    }
+    case ID(f) :: ID(name) :: t =>
+      (env.get(f), env.get(name)) match {
+        case (Some( closure @ CLOSURE(funcName, arg, cmds, ctx) ), Some(value)) =>
+          (cmds, Stack(t), Scope(Map(arg -> value), ctx.add(funcName -> closure)))
+        case _ => (Nil, Stack(ERROR :: xs), env)
+      }
+    case ID(f) :: value :: t =>
+      env.get(f) match {
+        case Some(closure @ CLOSURE(funcName, arg, cmds, ctx)) =>
+          (cmds, Stack(t), Scope(Map(arg -> value), ctx.add(funcName -> closure)))
+        case _ => (Nil, Stack(ERROR :: xs), env)
+      }
     case _ => (Nil, Stack(ERROR :: xs), env)
   }
 
