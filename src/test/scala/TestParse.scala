@@ -6,6 +6,56 @@ import io.github.mapogolions.cs305.buffalo.Parse
 
 
 class Test1 {
+  @Test def TestParseFunction: Unit = {
+    assertEquals(
+      Parse.commands(
+        List(
+          "fun f a",
+          "fun g b",
+          "return",
+          "funEnd",
+          "return",
+          "funEnd"
+        )
+      ),
+      (FUN::PUSH(ID("f"))::PUSH(ID("a"))::FUN::
+        PUSH(ID("g"))::PUSH(ID("b"))::RETURN::FUNEND::RETURN::FUNEND::Nil)
+    )
+    assertEquals(
+      Parse.commands(
+        List(
+          "fun add a b rest", // only one argument, b & rest will be ignored
+          "return",
+          "funEnd"
+        )
+      ),
+      FUN :: PUSH(ID("add")) :: PUSH(ID("a")) :: RETURN :: FUNEND :: Nil
+    )
+    assertEquals(
+      Parse.commands(
+        List(
+          "fun increm",
+          ":true:",
+          "funEnd"
+        )
+      ),
+      PUSH(ERROR) :: PUSH(BOOL(true)) :: FUNEND :: Nil
+    )
+    assertEquals(
+      Parse.commands(
+        List(
+          "fun inc n",
+          "push 10",
+          ":false:",
+          "return",
+          "funEnd"
+        )
+      ),
+      (FUN::PUSH(ID("inc"))::PUSH(ID("n"))::
+        PUSH(INT(10))::PUSH(BOOL(false))::RETURN::FUNEND::Nil)
+    );
+  }
+
   @Test def TestParseCommands: Unit = {
     assertEquals(Parse.commands(Nil), Nil)
 

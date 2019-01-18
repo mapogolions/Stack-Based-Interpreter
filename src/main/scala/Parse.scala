@@ -27,9 +27,13 @@ object Parse {
       case "bind" :: t    => BIND :: commands(ls)
       case "let" :: t     => LET :: commands(ls)
       case "end" :: t     => END :: commands(ls)
-      case "fun" :: t     => ???
+
+      case "fun" :: f :: x :: t =>
+        FUN :: PUSH(identifier(f)) :: PUSH(identifier(x)) :: commands(ls)
       case "return" :: t  => RETURN :: commands(ls)
-      case "funEnd" :: t  => FUNEND:: commands(ls)
+      case "funEnd" :: t  => FUNEND :: commands(ls)
+      case "call" :: t    => CALL :: commands(ls)
+
       case ":true:" :: t  => PUSH(BOOL(true)) :: commands(ls)
       case ":false:" :: t => PUSH(BOOL(false)) :: commands(ls)
       case ":error:" :: t => PUSH(ERROR) :: commands(ls)
@@ -56,6 +60,11 @@ object Parse {
   def integer(src: String, sign: Int): Vals =
     if (checkChars(digits, src.toList)) INT(sign * src.toInt)
     else ERROR
+
+  def ignore(src: String): Vals = src.trim match {
+    case ":unit:" => UNIT
+    case _ => ERROR
+  }
 
   def boolean(src: String): Vals = src.trim match {
     case ":true:" => BOOL(true)

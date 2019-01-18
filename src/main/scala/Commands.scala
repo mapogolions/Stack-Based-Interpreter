@@ -7,6 +7,8 @@ enum Commands {
   case FUN
   case RETURN
   case FUNEND
+  case CALL
+
   case LET
   case END
   case BIND

@@ -2,16 +2,33 @@ package io.github.mapogolions.cs305.buffalo
 
 import io.github.mapogolions.cs305.buffalo.Vals._
 import io.github.mapogolions.cs305.buffalo.{ Env, Scope, Empty }
+import io.github.mapogolions.cs305.buffalo.Main
+
 
 class Stack(val xs: List[Vals]) {
-  def bind(env: Env) = xs match {
-    case ERROR :: _ => (Stack(ERROR :: xs), env)
-    case ID(name1) :: ID(name2) :: t => env.get(name1) match {
-      case None => (Stack(ERROR :: xs), env) // attempt binding with unboud variable
-      case Some(v) => (Stack(UNIT :: t), env.add(name2 -> v)) // shared reference
+  def callFunc(env: Env) = xs match {
+    case ID(f) :: ERROR :: t => (Nil, Stack(ERROR :: xs), env)
+    case ID(f) :: ID(name) :: t => (env.get(f), env.get(name)) match {
+      case (Some(CLOSURE(_, arg, cmds, ctx)), Some(value)) =>
+        (cmds, Stack(), Scope(Map(arg -> value), ctx))
+      case _ => (Nil, Stack(ERROR :: xs), env)
     }
-    case v :: ID(k) :: t => (Stack(UNIT :: t), env.add(k, v)) // binding
-    case _ => (Stack(ERROR :: xs), env)
+    case ID(f) :: value :: t => env.get(f) match {
+      case Some(CLOSURE(_, arg, cmds, ctx)) =>
+        (cmds, Stack(), Scope(Map(arg -> value), ctx))
+      case _ => (Nil, Stack(ERROR :: xs), env)
+    }
+    case _ => (Nil, Stack(ERROR :: xs), env)
+  }
+
+  def bind(env: Env) = xs match {
+    case ERROR :: _ => Stack(ERROR :: xs) -> env
+    case ID(name1) :: ID(name2) :: t => env.get(name1) match {
+      case None => Stack(ERROR :: xs) -> env // attempt binding with unboud variable
+      case Some(v) => Stack(UNIT :: t) -> env.add(name2 -> v) // shared reference
+    }
+    case v :: ID(k) :: t => Stack(UNIT :: t) -> env.add(k, v) // binding
+    case _ => Stack(ERROR :: xs) -> env
   }
 
   def cond(env: Env) = xs match {
@@ -43,7 +60,7 @@ class Stack(val xs: List[Vals]) {
     case _ => Stack(ERROR :: xs) -> env
   }
 
-  // binary 
+  // binary
   def swap(env: Env) = xs match {
     case a :: b :: t => Stack(b :: a :: t) -> env
     case _ => Stack(ERROR :: xs) -> env
@@ -67,7 +84,7 @@ class Stack(val xs: List[Vals]) {
           case Some(BOOL(v1)) => f(v1, v2)
           case _ => ERROR
         }
-      case (BOOL(v1), ID(name)) => 
+      case (BOOL(v1), ID(name)) =>
         env.get(name) match {
           case Some(BOOL(v2)) => f(v1, v2)
           case _ => ERROR
@@ -92,7 +109,7 @@ class Stack(val xs: List[Vals]) {
           case Some(INT(v1)) => f(v1, v2)
           case _ => ERROR
         }
-      case (INT(v1), ID(name)) => 
+      case (INT(v1), ID(name)) =>
         env.get(name) match {
           case Some(INT(v2)) => f(v1, v2)
           case _ => ERROR

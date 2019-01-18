@@ -7,8 +7,15 @@ import io.github.mapogolions.cs305.buffalo.{ Env, Scope, Empty }
 
 
 class TestStack {
+  // @Test def TestCallFunctionStack: Unit = {
+  //   assertEquals(
+  //     Stack().call(Empty),
+  //     Stack() -> Empty
+  //   )
+  // }
+
   @Test def TestBindStack: Unit = {
-    /** 
+    /**
       * Shared reference (the different scope)
       * let b = BOOL(true)
       * {
@@ -25,19 +32,19 @@ class TestStack {
           )
         )
       ),
-      ( 
-        Stack(UNIT :: Nil), 
+      (
+        Stack(UNIT :: Nil),
         Scope(
           Map("a" -> BOOL(true)),
           Scope(
             Map("a" -> BOOL(true)),
             Empty
           )
-        ) 
+        )
       )
     )
 
-    /** 
+    /**
       * Shared reference (the same scope)
       * let b = INT(10)
       * let a = b
@@ -62,23 +69,23 @@ class TestStack {
       Stack(STR("hello") :: ID("a") :: Nil)
         .bind(
           Scope(
-            Map(), 
+            Map(),
             Scope(
-              Map("a" -> BOOL(true)), 
+              Map("a" -> BOOL(true)),
               Empty
             )
           )
         ),
-      ( 
-        Stack(UNIT :: Nil), 
+      (
+        Stack(UNIT :: Nil),
         Scope(
           Map("a" -> STR("hello")),
           Scope(
             Map("a" -> BOOL(true)),
             Empty
           )
-        ) 
-      )      
+        )
+      )
     )
 
     /** The same cope (rewrite)
@@ -358,7 +365,7 @@ class TestStack {
       Stack(ID("in") :: ID("out") :: Nil)
         .mul(Scope(Map("in" -> INT(10)), Scope(Map("out" -> BOOL(false)), Empty))),
       (
-        Stack(ERROR :: ID("in") :: ID("out") :: Nil), 
+        Stack(ERROR :: ID("in") :: ID("out") :: Nil),
         Scope(Map("in" -> INT(10)), Scope(Map("out" -> BOOL(false)), Empty))
       )
     )
