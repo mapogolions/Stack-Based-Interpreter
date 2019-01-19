@@ -21,13 +21,10 @@ class TestInterpreterLetEnd {
             "quit"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (
-        Stack(ERROR :: INT(10) :: Nil) :: Nil,
-        Empty
-      )
+      Stack(ERROR :: INT(10) :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
@@ -43,13 +40,10 @@ class TestInterpreterLetEnd {
             "end",
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (
-        Stack(ERROR :: INT(3) :: Nil) :: Nil,
-        Empty
-      )
+      Stack(ERROR :: INT(3) :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
@@ -63,13 +57,10 @@ class TestInterpreterLetEnd {
             "quit"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (
-        Stack(ERROR :: Nil) :: Nil,
-        Empty
-      )
+      Stack(ERROR :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
@@ -84,13 +75,10 @@ class TestInterpreterLetEnd {
               "push 5"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (
-        Stack(INT(5) :: INT(4) :: STR("harry") :: Nil) :: Nil,
-        Empty
-      )
+      Stack(INT(5) :: INT(4) :: STR("harry") :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
@@ -117,13 +105,10 @@ class TestInterpreterLetEnd {
             "end"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (
-        Stack(UNIT :: Nil) :: Nil,
-        Empty
-      )
+      Stack(UNIT :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
@@ -142,42 +127,42 @@ class TestInterpreterLetEnd {
             "end"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (Stack(INT(-15) :: UNIT :: Nil) :: Nil) -> Scope(Map("a" -> INT(10)), Empty)
+      Stack(INT(-15) :: UNIT :: Nil) -> Scope(Map("a" -> INT(10)), Empty)
     )
     assertEquals(
       Main.exec(
         Parse.commands("push 4" :: "end" :: "push :false:" :: Nil),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (Stack(BOOL(false):: ERROR :: INT(4) :: Nil) :: Nil) -> Empty
+      Stack(INT(4) :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
         Parse.commands("push 4" :: "let" :: "push :true:" :: "end" :: Nil),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (Stack(BOOL(true) :: INT(4) :: Nil) :: Nil) -> Empty
+      Stack(BOOL(true) :: INT(4) :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
         Parse.commands("push 4" :: "let" :: "push b" :: "push :true:" :: "bind" :: "end" :: Nil),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (Stack(UNIT :: INT(4) :: Nil) :: Nil) -> Empty
+      Stack(UNIT :: INT(4) :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
         Parse.commands("push 4" :: "let" :: "end" :: Nil),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (Stack(UNIT :: INT(4) :: Nil) :: Nil) -> Empty
+      Stack(UNIT :: INT(4) :: Nil) -> Empty
     )
   }
 }

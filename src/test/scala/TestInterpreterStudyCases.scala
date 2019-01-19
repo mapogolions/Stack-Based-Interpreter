@@ -21,11 +21,11 @@ class TestInterpreterStudyCases {
             "quit"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
       (
-        Stack(INT(3) :: ID("a") :: UNIT :: Nil) :: Nil,
+        Stack(INT(3) :: ID("a") :: UNIT :: Nil),
         Scope(Map("a" -> INT(9)), Empty)
       )
     )
@@ -42,13 +42,10 @@ class TestInterpreterStudyCases {
             "quit"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (
-        Stack(BOOL(true) :: Nil) :: Nil,
-        Empty
-      )
+      Stack(BOOL(true) :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
@@ -61,11 +58,11 @@ class TestInterpreterStudyCases {
             "quit"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
       (
-        Stack(INT(5) :: ERROR :: INT(3) :: BOOL(true) :: Nil) :: Nil,
+        Stack(INT(5) :: ERROR :: INT(3) :: BOOL(true) :: Nil),
         Empty
       )
     )
@@ -84,13 +81,10 @@ class TestInterpreterStudyCases {
             "quit"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (
-        Stack(BOOL(true) :: BOOL(false) :: ID("a") :: Nil) :: Nil,
-        Empty
-      )
+      Stack(BOOL(true) :: BOOL(false) :: ID("a") :: Nil) -> Empty
     )
 
     assertEquals(
@@ -107,11 +101,11 @@ class TestInterpreterStudyCases {
             "quit"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
       (
-        Stack(ID("num3") :: UNIT :: UNIT :: Nil) :: Nil,
+        Stack(ID("num3") :: UNIT :: UNIT :: Nil),
         Scope(Map("num2" -> INT(9), "num1" -> INT(8)), Empty)
       )
     )
@@ -134,11 +128,11 @@ class TestInterpreterStudyCases {
             "quit"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
       (
-        Stack(INT(5) :: UNIT :: UNIT :: Nil) :: Nil,
+        Stack(INT(5) :: UNIT :: UNIT :: Nil),
         Scope(Map("a" -> INT(5), "b" -> INT(10)), Empty)
       )
     )
@@ -157,13 +151,10 @@ class TestInterpreterStudyCases {
             "quit"
           )
         ),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (
-        Stack(INT(4) :: Nil) :: Nil,
-        Empty
-      )
+      Stack(INT(4) :: Nil) -> Empty
     )
   }
 }

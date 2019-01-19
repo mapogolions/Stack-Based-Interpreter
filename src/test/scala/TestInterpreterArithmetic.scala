@@ -12,26 +12,26 @@ class TestInterpreterArithmetic {
     assertEquals(
       Main.exec(
         Parse.commands("push 2" :: "push 10" :: "sub" :: Nil),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (Stack(INT(-8) :: Nil) :: Nil) -> Empty
+      Stack(INT(-8) :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
         Parse.commands("push 2" :: "push 10" :: "mul" :: Nil),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (Stack(INT(20) :: Nil) :: Nil) -> Empty
+      Stack(INT(20) :: Nil) -> Empty
     )
     assertEquals(
       Main.exec(
         Parse.commands("push 10" :: "push 10" :: "add" :: Nil),
-        Stack() :: Nil,
+        Stack(),
         Empty
       ),
-      (Stack(INT(20) :: Nil) :: Nil) -> Empty
+      Stack(INT(20) :: Nil) -> Empty
     )
   }
 }

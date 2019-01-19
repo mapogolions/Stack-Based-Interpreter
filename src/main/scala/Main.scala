@@ -7,190 +7,178 @@ import io.github.mapogolions.cs305.buffalo.Stack
 
 
 object Main {
-  // rollup function body
-  def skip(cmds: List[Commands], funcName: String, param: String, env: Env) = {
-    @annotation.tailrec
-    def loop(body: List[Commands], rest: List[Commands]): (List[Commands], Env) =
-      rest match {
-        case Nil => rest -> env
-        case FUNEND :: t =>
-          (PUSH(UNIT) :: t) -> env.add(funcName, CLOSURE(funcName, param, body.reverse, env))
-        case h :: t => loop(h :: body, t)
+  def letEnd(cmds: List[Commands]) = {
+    def loop(
+      acc: List[Commands], 
+      xs: List[Commands], 
+      balanced: List[Commands]): (List[Commands], List[Commands]) =
+      xs match {
+        case LET :: t if (balanced != Nil) => loop(LET :: acc, t, LET :: balanced)
+        case LET :: t => loop(acc, t, LET :: balanced)
+        case END :: t if (letEndBalanced((END :: balanced).reverse)) => acc.reverse -> t
+        case END :: t => loop(END :: acc, t, END :: balanced)
+        case cmd :: t => loop(cmd :: acc, t, balanced)
+        case _ => acc.reverse -> xs
       }
-
-    loop(Nil, cmds)
+    loop(Nil, cmds, Nil)
   }
 
-  def exec(cmds: List[Commands], stacks: List[Stack], env: Env): (List[Stack], Env) =
+  def funEnd(cmds: List[Commands]) = {
+    def loop(
+      acc: List[Commands], 
+      xs: List[Commands], 
+      balanced: List[Commands]): (List[Commands], List[Commands]) =
+      xs match {
+        case FUN :: t if (balanced != Nil) => loop(FUN :: acc, t, FUN :: balanced)
+        case FUN :: t => loop(acc, t, FUN :: balanced)
+        case FUNEND :: t if (funEndBalanced((FUNEND :: balanced).reverse)) => acc.reverse -> t
+        case FUNEND :: t => loop(FUNEND :: acc, t, FUNEND :: balanced)
+        case cmd :: t => loop(cmd :: acc, t, balanced)
+        case _ => acc.reverse -> xs
+      }
+    loop(Nil, cmds, Nil)
+  }
+
+  def letEndBalanced(tokens: List[Commands]): Boolean = {
+    @annotation.tailrec
+    def loop(tokens: List[Commands], stack: List[Commands]): Boolean = {
+      (tokens, stack) match {
+        case (LET :: t, stack) => loop(t, LET :: stack)
+        case (END :: t, LET :: t2) => loop(t, t2)
+        case (Nil, Nil) => true
+        case _ => false
+      }
+    }
+    loop(tokens, Nil)
+  }
+
+  def funEndBalanced(tokens: List[Commands]): Boolean = {
+    @annotation.tailrec
+    def loop(tokens: List[Commands], stack: List[Commands]): Boolean = {
+      (tokens, stack) match {
+        case (FUN :: t, stack) => loop(t, FUN :: stack)
+        case (FUNEND :: t, FUN :: t2) => loop(t, t2)
+        case (Nil, Nil) => true
+        case _ => false
+      }
+    }
+    loop(tokens, Nil)
+  }
+
+  def exec(cmds: List[Commands], stack: Stack, env: Env): (Stack, Env) =
     cmds match {
-      case PUSH(v) :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.push(v, env)
-          exec(t, stack :: frames, ctx)
-        }
+      case PUSH(v) :: t => {
+        val (newStack, ctx) = stack.push(v, env)
+        exec(t, newStack, ctx)
       }
 
-      case POP :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.pop(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case POP:: t => {
+        val (newStack, ctx) = stack.pop(env)
+        exec(t, newStack, ctx)
       }
 
-      case FUN :: PUSH(ID(funcName)) :: PUSH(ID(param)) :: t => {
-        val (cmds, ctx) = skip(t, funcName, param, env)
-        exec(cmds, stacks, ctx)
-      }
+      case RETURN :: t => stack -> env
 
-      case CALL :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (body, stack, ctx) = frame.callFunc(env)
-          val (fstacks, fenv) = exec(body, Stack() :: Nil, ctx)
-          val result = fstacks.head.xs.head
-          val (newStack, _) = stack.push(result, env)
-          exec(t, newStack :: frames, env)
-        }
-      }
-
-      case RETURN :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => frame match {
-          case Stack(Nil) => (Stack(UNIT::Nil) :: Nil, env)
-          case Stack(h :: t) => (Stack(h::Nil) :: Nil, env)
-        }
-      }
-
-      case LET :: t => exec(t, Stack() :: stacks, Scope(Map(), env))
-      case END :: t => {
-        stacks match {
-          case Stack(Nil) :: Stack(ys) :: rest => exec(t, Stack(UNIT :: ys) :: rest, env.parent)
-          case Stack(ID(name) :: _) :: Stack(ys) :: rest => env.get(name) match {
-            case Some(v) => exec(t, Stack(v :: ys) :: rest, env.parent)
-            case _ => exec(t, Stack(ERROR :: ys) :: rest, env.parent)
-          }
-          case Stack(v :: _) :: Stack(ys) :: rest => exec(t, Stack(v :: ys) :: rest, env.parent)
-          case _ => stacks.head match {
-              case Stack(ys) => exec(t, Stack(ERROR :: ys) :: stacks.tail, env)
+      case CALL :: t => {
+        val (funCmds, newStack, ctx) = stack.callFunc(env)
+        funCmds match {
+          case Nil => exec(t, newStack, env)
+          case body => (exec(body, Stack(), ctx), newStack) match {
+            case ((Stack(Nil), _), Stack(ys)) => exec(t, Stack(UNIT :: ys), env)
+            case ((Stack(ID(name):: _), _), Stack(ys)) => ctx.get(name) match {
+              case Some(v) => exec(t, Stack(v :: ys), env)
+              case _ => exec(t, Stack(ERROR :: ys), env)
             }
+            case ((Stack(h :: _), _), Stack(ys)) => exec(t, Stack(h :: ys), env)
+          }
         }
       }
 
-      case ADD :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.add(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case FUN :: PUSH(ID(f)) :: PUSH(ID(arg)) :: t => {
+        val (funCmds, restCmds) = funEnd(FUN :: t)
+        exec(restCmds, Stack(UNIT :: stack.xs), env.add(f -> CLOSURE(f, arg, funCmds, env)))
       }
 
-      case SUB :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.sub(env)
-          exec(t, stack :: frames, ctx)
+      case LET :: t => {
+        val (letCmds, restCmds) = letEnd(LET :: t)
+        val (newStack, ctx) = exec(letCmds, Stack(), Scope(Map(), env))
+        (newStack, stack) match {
+          case (Stack(Nil), Stack(ys)) => exec(restCmds, Stack(UNIT :: ys), env)
+          case (Stack(h :: t), Stack(ys)) => exec(restCmds, Stack(h :: ys), env)
         }
       }
-
-      case MUL :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.mul(env)
-          exec(t, stack :: frames, ctx)
-        }
+      
+      case ADD :: t => {
+        val (newStack, ctx) = stack.add(env)
+        exec(t, newStack, ctx)
       }
 
-      case DIV :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.div(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case SUB :: t => {
+        val (newStack, ctx) = stack.sub(env)
+        exec(t, newStack, ctx)
       }
 
-      case REM :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.rem(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case MUL :: t => {
+        val (newStack, ctx) = stack.mul(env)
+        exec(t, newStack, ctx)
       }
 
-      case BIND :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.bind(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case DIV :: t => {
+        val (newStack, ctx) = stack.div(env)
+        exec(t, newStack, ctx)
       }
 
-      case IF :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.cond(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case REM :: t => {
+        val (newStack, ctx) = stack.rem(env)
+        exec(t, newStack, ctx)
       }
 
-      case LESSTHAN :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.lessThan(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case BIND :: t => {
+        val (newStack, ctx) = stack.bind(env)
+        exec(t, newStack, ctx)
       }
 
-      case EQUAL :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.equality(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case IF :: t => {
+        val (newStack, ctx) = stack.cond(env)
+        exec(t, newStack, ctx)
       }
 
-      case NOT :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.not(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case LESSTHAN :: t => {
+        val (newStack, ctx) = stack.lessThan(env)
+        exec(t, newStack, ctx)
       }
 
-      case OR :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.or(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case EQUAL :: t => {
+        val (newStack, ctx) = stack.equality(env)
+        exec(t, newStack, ctx)
       }
 
-      case AND :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.and(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case NOT :: t => {
+        val (newStack, ctx) = stack.not(env)
+        exec(t, newStack, ctx)
       }
 
-      case SWAP :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.swap(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case OR :: t => {
+        val (newStack, ctx) = stack.or(env)
+        exec(t, newStack, ctx)
       }
 
-      case NEG :: t => stacks match {
-        case Nil => exec(t, Stack(ERROR :: Nil) :: stacks, env)
-        case frame :: frames => {
-          val (stack, ctx) = frame.neg(env)
-          exec(t, stack :: frames, ctx)
-        }
+      case AND :: t => {
+        val (newStack, ctx) = stack.and(env)
+        exec(t, newStack, ctx)
       }
 
-      case QUIT :: t => stacks -> env
-      case _ => stacks -> env
+      case SWAP :: t => {
+        val (newStack, ctx) = stack.swap(env)
+        exec(t, newStack, ctx)
+      }
+
+      case NEG :: t => {
+        val (newStack, ctx) = stack.neg(env)
+        exec(t, newStack, ctx)
+      }
+
+      case QUIT :: t => stack -> env
+      case _ => stack -> env
     }
 }
