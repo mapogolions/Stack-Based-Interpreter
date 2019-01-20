@@ -10,7 +10,93 @@ import io.github.mapogolions.cs305.buffalo.Main
 
 class TestInterpreterFunction {
   @Test def TestExecInterpreter: Unit = {
-    /* assertEquals(
+    // Example 6 - High Order Functin (HOC)
+    assertEquals(
+      Main.exec(
+        Parse.commands(
+          List(
+            "fun add1 x",
+              "push x",
+              "push 1",
+              "add",
+              "return",
+            "funEnd",
+
+            "push z",
+            "push 2",
+            "bind",
+
+            "fun twiceZ y",
+              "push z",
+              "push y",
+              "call",
+              "push z",
+              "push y",
+              "call",
+              "push z",
+              "push y",
+              "call",
+              "add",
+              "return",
+            "funEnd",
+
+            "push add1",
+            "push twiceZ",
+            "call",
+            "quit"
+          )
+        ),
+        Stack(),
+        Empty
+      ),
+      (
+        Stack(INT(6)::UNIT:: UNIT::UNIT::Nil),
+        Scope(
+          Map(
+            "add1" -> CLOSURE(
+              "add1",
+              "x",
+              PUSH(ID("x"))::PUSH(INT(1))::ADD:: RETURN::Nil,
+              Empty
+            ),
+            "z" -> INT(2),
+            "twiceZ" -> CLOSURE(
+              "twiceZ",
+              "y",
+              List(
+                PUSH(ID("z")),
+                PUSH(ID("y")),
+                CALL,
+                PUSH(ID("z")),
+                PUSH(ID("y")),
+                CALL,
+                PUSH(ID("z")),
+                PUSH(ID("y")),
+                CALL,
+                ADD,
+                RETURN
+              ),
+              Scope(
+                Map(
+                  "z" -> INT(2),
+                  "add1" -> CLOSURE(
+                    "add1",
+                    "x",
+                    PUSH(ID("x"))::PUSH(INT(1))::ADD:: RETURN::Nil,
+                    Empty
+                  ),
+                ),
+                Empty
+              )
+            )
+          ),
+          Empty
+        )
+      )
+    )
+
+    // Example 5 - factorial
+    assertEquals(
       Main.exec(
         Parse.commands(
           List(
@@ -43,17 +129,42 @@ class TestInterpreterFunction {
         Empty
       ),
       (
-        Stack(INT(6)::UNIT:: UNIT::UNIT::UNIT::Nil),
+        Stack(INT(6) :: UNIT :: UNIT :: Nil),
         Scope(
           Map(
-            "x" -> INT(5),
-            "a" -> INT(3),
-            "addX" -> CLOSURE(
-              "addX",
+            "stop" -> CLOSURE(
+              "stop",
               "arg",
-              PUSH(ID("x"))::PUSH(ID("arg"))::ADD:: RETURN::Nil,
+              PUSH(INT(1))::RETURN::Nil,
+              Empty
+            ),
+            "factorial" -> CLOSURE(
+              "factorial",
+              "arg",
+              List(
+                PUSH(ID("arg")),
+                PUSH(INT(1)),
+                SUB,
+                PUSH(INT(1)),
+                PUSH(ID("arg")),
+                EQUAL,
+                PUSH(ID("factorial")),
+                PUSH(ID("stop")),
+                IF,
+                CALL,
+                PUSH(ID("arg")),
+                MUL,
+                RETURN
+              ),
               Scope(
-                Map("x" -> INT(3)),
+                Map(
+                  "stop" -> CLOSURE(
+                    "stop",
+                    "arg",
+                    PUSH(INT(1))::RETURN::Nil,
+                    Empty
+                  ),
+                ),
                 Empty
               )
             )
@@ -61,8 +172,9 @@ class TestInterpreterFunction {
           Empty
         )
       )
-    ) */
+    )
 
+    // Example 4 - Static environment of function (see variable `x`)
     assertEquals(
       Main.exec(
         Parse.commands(
@@ -112,6 +224,7 @@ class TestInterpreterFunction {
       )
     )
 
+    // Example 3 - Actual parameter is bounded variable
     assertEquals(
       Main.exec(
         Parse.commands(
@@ -148,6 +261,8 @@ class TestInterpreterFunction {
         )
       )
     )
+
+    // Example 2 - Invalid actual parameter
     assertEquals(
       Main.exec(
         Parse.commands(
@@ -181,6 +296,7 @@ class TestInterpreterFunction {
       )
     )
 
+    // Example 1 - Simple call of function
     assertEquals(
       Main.exec(
         Parse.commands(
@@ -252,6 +368,45 @@ class TestInterpreterFunction {
       )
     )
 
+    assertEquals(
+      Main.exec(
+        Parse.commands(
+          List(
+            "fun inc n",
+            "push a",
+            ":false:",
+            "bind",
+            "push a",
+            "return",
+            "funEnd",
+            "push 10",
+            "push inc",
+            "call",
+            "quit"
+          )
+        ),
+        Stack(),
+        Empty
+      ),
+      (
+        Stack(BOOL(false)::UNIT :: Nil),
+        Scope(
+          Map("inc" -> CLOSURE(
+            "inc",
+            "n",
+            List(
+              PUSH(ID("a")),
+              PUSH(BOOL(false)),
+              BIND,
+              PUSH(ID("a")),
+              RETURN
+            ),
+            Empty
+          )),
+          Empty
+        ),
+      )
+    )
     assertEquals(
       Main.exec(
         Parse.commands(

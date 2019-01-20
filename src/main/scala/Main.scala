@@ -9,8 +9,8 @@ import io.github.mapogolions.cs305.buffalo.Stack
 object Main {
   def letEnd(cmds: List[Commands]) = {
     def loop(
-      acc: List[Commands], 
-      xs: List[Commands], 
+      acc: List[Commands],
+      xs: List[Commands],
       balanced: List[Commands]): (List[Commands], List[Commands]) =
       xs match {
         case LET :: t if (balanced != Nil) => loop(LET :: acc, t, LET :: balanced)
@@ -25,8 +25,8 @@ object Main {
 
   def funEnd(cmds: List[Commands]) = {
     def loop(
-      acc: List[Commands], 
-      xs: List[Commands], 
+      acc: List[Commands],
+      xs: List[Commands],
       balanced: List[Commands]): (List[Commands], List[Commands]) =
       xs match {
         case FUN :: t if (balanced != Nil) => loop(FUN :: acc, t, FUN :: balanced)
@@ -80,12 +80,12 @@ object Main {
       case RETURN :: t => stack -> env
 
       case CALL :: t => {
-        val (funCmds, newStack, ctx) = stack.callFunc(env)
-        funCmds match {
+        val (funBody, newStack, statEnv) = stack.callFunc(env)
+        funBody match {
           case Nil => exec(t, newStack, env)
-          case body => (exec(body, Stack(), ctx), newStack) match {
+          case body => (exec(body, Stack(), statEnv), newStack) match {
             case ((Stack(Nil), _), Stack(ys)) => exec(t, Stack(UNIT :: ys), env)
-            case ((Stack(ID(name):: _), _), Stack(ys)) => ctx.get(name) match {
+            case ((Stack(ID(name):: _), ctx), Stack(ys)) => ctx.get(name) match {
               case Some(v) => exec(t, Stack(v :: ys), env)
               case _ => exec(t, Stack(ERROR :: ys), env)
             }
@@ -107,7 +107,7 @@ object Main {
           case (Stack(h :: t), Stack(ys)) => exec(restCmds, Stack(h :: ys), env)
         }
       }
-      
+
       case ADD :: t => {
         val (newStack, ctx) = stack.add(env)
         exec(t, newStack, ctx)
