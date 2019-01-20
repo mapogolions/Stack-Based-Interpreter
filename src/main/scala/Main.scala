@@ -4,68 +4,21 @@ import io.github.mapogolions.cs305.buffalo.Vals._
 import io.github.mapogolions.cs305.buffalo.{ Env, Scope, Empty }
 import io.github.mapogolions.cs305.buffalo.Commands._
 import io.github.mapogolions.cs305.buffalo.Stack
+import io.github.mapogolions.cs305.buffalo.Parse
+import scala.io.Source
+import java.io._
 
 
 object Main {
-  def letEnd(cmds: List[Commands]) = {
-    def loop(
-      acc: List[Commands],
-      xs: List[Commands],
-      balanced: List[Commands]): (List[Commands], List[Commands]) =
-      xs match {
-        case LET :: t if (balanced != Nil) => loop(LET :: acc, t, LET :: balanced)
-        case LET :: t => loop(acc, t, LET :: balanced)
-        case END :: t if (letEndBalanced((END :: balanced).reverse)) => acc.reverse -> t
-        case END :: t => loop(END :: acc, t, END :: balanced)
-        case cmd :: t => loop(cmd :: acc, t, balanced)
-        case _ => acc.reverse -> xs
-      }
-    loop(Nil, cmds, Nil)
+  def channel(source: String, target: String) = {
+    val lines = Source.fromFile(source).getLines.toList
+    val (stack, env) = exec(Parse.commands(lines), Stack(), Empty)
+    val pw = new PrintWriter(new File(target))
+    stack.xs.foreach(line => pw.write(line.toString))
+    pw.close
   }
 
-  def funEnd(cmds: List[Commands]) = {
-    def loop(
-      acc: List[Commands],
-      xs: List[Commands],
-      balanced: List[Commands]): (List[Commands], List[Commands]) =
-      xs match {
-        case FUN :: t if (balanced != Nil) => loop(FUN :: acc, t, FUN :: balanced)
-        case FUN :: t => loop(acc, t, FUN :: balanced)
-        case FUNEND :: t if (funEndBalanced((FUNEND :: balanced).reverse)) => acc.reverse -> t
-        case FUNEND :: t => loop(FUNEND :: acc, t, FUNEND :: balanced)
-        case cmd :: t => loop(cmd :: acc, t, balanced)
-        case _ => acc.reverse -> xs
-      }
-    loop(Nil, cmds, Nil)
-  }
-
-  def letEndBalanced(tokens: List[Commands]): Boolean = {
-    @annotation.tailrec
-    def loop(tokens: List[Commands], stack: List[Commands]): Boolean = {
-      (tokens, stack) match {
-        case (LET :: t, stack) => loop(t, LET :: stack)
-        case (END :: t, LET :: t2) => loop(t, t2)
-        case (Nil, Nil) => true
-        case _ => false
-      }
-    }
-    loop(tokens, Nil)
-  }
-
-  def funEndBalanced(tokens: List[Commands]): Boolean = {
-    @annotation.tailrec
-    def loop(tokens: List[Commands], stack: List[Commands]): Boolean = {
-      (tokens, stack) match {
-        case (FUN :: t, stack) => loop(t, FUN :: stack)
-        case (FUNEND :: t, FUN :: t2) => loop(t, t2)
-        case (Nil, Nil) => true
-        case _ => false
-      }
-    }
-    loop(tokens, Nil)
-  }
-
-  def exec(cmds: List[Commands], stack: Stack, env: Env): (Stack, Env) =
+  def exec(cmds: List[Commands], stack: Stack=Stack(), env: Env=Empty): (Stack, Env) =
     cmds match {
       case PUSH(v) :: t => {
         val (newStack, ctx) = stack.push(v, env)
@@ -181,4 +134,62 @@ object Main {
       case QUIT :: t => stack -> env
       case _ => stack -> env
     }
+
+    def letEnd(cmds: List[Commands]) = {
+    def loop(
+      acc: List[Commands],
+      xs: List[Commands],
+      balanced: List[Commands]): (List[Commands], List[Commands]) =
+      xs match {
+        case LET :: t if (balanced != Nil) => loop(LET :: acc, t, LET :: balanced)
+        case LET :: t => loop(acc, t, LET :: balanced)
+        case END :: t if (letEndBalanced((END :: balanced).reverse)) => acc.reverse -> t
+        case END :: t => loop(END :: acc, t, END :: balanced)
+        case cmd :: t => loop(cmd :: acc, t, balanced)
+        case _ => acc.reverse -> xs
+      }
+    loop(Nil, cmds, Nil)
+  }
+
+  def funEnd(cmds: List[Commands]) = {
+    def loop(
+      acc: List[Commands],
+      xs: List[Commands],
+      balanced: List[Commands]): (List[Commands], List[Commands]) =
+      xs match {
+        case FUN :: t if (balanced != Nil) => loop(FUN :: acc, t, FUN :: balanced)
+        case FUN :: t => loop(acc, t, FUN :: balanced)
+        case FUNEND :: t if (funEndBalanced((FUNEND :: balanced).reverse)) => acc.reverse -> t
+        case FUNEND :: t => loop(FUNEND :: acc, t, FUNEND :: balanced)
+        case cmd :: t => loop(cmd :: acc, t, balanced)
+        case _ => acc.reverse -> xs
+      }
+    loop(Nil, cmds, Nil)
+  }
+
+  def letEndBalanced(tokens: List[Commands]): Boolean = {
+    @annotation.tailrec
+    def loop(tokens: List[Commands], stack: List[Commands]): Boolean = {
+      (tokens, stack) match {
+        case (LET :: t, stack) => loop(t, LET :: stack)
+        case (END :: t, LET :: t2) => loop(t, t2)
+        case (Nil, Nil) => true
+        case _ => false
+      }
+    }
+    loop(tokens, Nil)
+  }
+
+  def funEndBalanced(tokens: List[Commands]): Boolean = {
+    @annotation.tailrec
+    def loop(tokens: List[Commands], stack: List[Commands]): Boolean = {
+      (tokens, stack) match {
+        case (FUN :: t, stack) => loop(t, FUN :: stack)
+        case (FUNEND :: t, FUN :: t2) => loop(t, t2)
+        case (Nil, Nil) => true
+        case _ => false
+      }
+    }
+    loop(tokens, Nil)
+  }
 }

@@ -6,13 +6,13 @@ import io.github.mapogolions.cs305.buffalo.Commands
 
 enum Vals { self =>
   override def toString = self match {
-    case ERROR => "ERROR"
-    case UNIT  => "UNIT"
-    case INT(v) => s"INT($v)"
-    case BOOL(v) => s"BOOL($v)"
-    case STR(v) => s"STR($v)"
-    case ID(name) => s"ID($name)"
-    case CLOSURE(name, args, _, body) => s"FUN($name)<${body}>"
+    case ERROR => ":error:"
+    case UNIT  => ":unit:"
+    case INT(v) => s"$v"
+    case BOOL(v) => s"$v"
+    case STR(v) => v
+    case ID(name) => name
+    case CLOSURE(name, args, _, body) => s"<fun>($name)<${body}>"
   }
 
   case ERROR
@@ -23,25 +23,3 @@ enum Vals { self =>
   case ID(val content: String)
   case CLOSURE(val name: String, arg: String, body: List[Commands], ctx: Env)
 }
-
-// PUSH(ID("a"))
-// PUSH(ID("b"))
-// FUN
-// PUSH(
-//   CLOJURE(
-//     ID("identifier"), function name
-//       ID("a") :: ID("b") :: Nil, arguments,
-//     CTX: env, окружение в котором была создана функция
-//     BODY(PUSH(INT(10) :: PUSH(INT10) :: ADD :: RETURN))
-//   )
-// )
-// FUNEND - аналог для BIND
-
-// Вызов функции выглядит следующим образом:
-//   -- commands --                           -- stack --
-// PUSH(ID("increment"))                   INT(10)
-// PUSH(INT(10))                           ID("increment")
-// CALL        ->                          return function value
-//
-
-// FUN .. FUNEND от LET .. END - отличает механизмом отложенного вычисления
