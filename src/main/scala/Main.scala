@@ -83,7 +83,7 @@ object Main {
         val (funBody, newStack, statEnv) = stack.callFunc(env)
         funBody match {
           case Nil => exec(t, newStack, env)
-          case body => (exec(body, Stack(), statEnv), newStack) match {
+          case _ => (exec(funBody, Stack(), statEnv), newStack) match {
             case ((Stack(Nil), _), Stack(ys)) => exec(t, Stack(UNIT :: ys), env)
             case ((Stack(ID(name):: _), ctx), Stack(ys)) => ctx.get(name) match {
               case Some(v) => exec(t, Stack(v :: ys), env)
@@ -95,8 +95,8 @@ object Main {
       }
 
       case FUN :: PUSH(ID(f)) :: PUSH(ID(arg)) :: t => {
-        val (funCmds, restCmds) = funEnd(FUN :: t)
-        exec(restCmds, Stack(UNIT :: stack.xs), env.add(f -> CLOSURE(f, arg, funCmds, env)))
+        val (funBody, restCmds) = funEnd(FUN :: t)
+        exec(restCmds, Stack(UNIT :: stack.xs), env.add(f -> CLOSURE(f, arg, funBody, env)))
       }
 
       case LET :: t => {
