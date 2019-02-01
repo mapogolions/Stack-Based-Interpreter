@@ -4,7 +4,6 @@ import io.github.mapogolions.cs305.buffalo.Vals
 
 
 enum Commands {
-  case INOUT
   case FUN
   case RETURN
   case FUNEND

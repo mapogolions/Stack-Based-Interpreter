@@ -1,0 +1,28 @@
+fun addOne x
+  push x
+  push 1
+  add
+  return
+funEnd
+push z
+push 3
+bind
+fun twiceZ f
+  push z
+  push f
+  call
+  push z
+  push f
+  call
+  push z
+  push f
+  call
+  add
+  return
+funEnd
+push addOne
+push twiceZ
+call
+quit
+
+

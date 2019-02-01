@@ -8,7 +8,7 @@ object Parse {
   // Parse strings into commands list
   def commands(xs: List[String]): List[Commands] = xs match {
     case Nil => Nil
-    case line :: ls => line.split(' ').toList match {
+    case line :: ls => line.trim.split(' ').toList match {
       case "push" :: t    => PUSH(literal(t.mkString(""))) :: commands(ls)
       case "pop" :: t     => POP :: commands(ls)
       case "add" :: t     => ADD :: commands(ls)

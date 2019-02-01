@@ -112,6 +112,26 @@ class TestInterpreterBind {
     )
     assertEquals(
       Main.exec(
+        Parse.commands(
+          List(
+            "push b",
+            "push 8",
+            "bind",
+            "push 10", 
+            "push b",
+            "add"
+          ),
+        ),
+        Stack(),
+        Empty
+      ),
+      (
+        Stack(INT(18) :: UNIT :: Nil),
+        Scope(Map("b" -> INT(8)), Empty)
+      )
+    )
+    assertEquals(
+      Main.exec(
         Parse.commands("push a" :: "4.09" :: "bind" :: Nil),
         Stack(),
         Empty

@@ -14,7 +14,7 @@ object Main {
     val lines = Source.fromFile(source).getLines.toList
     val (stack, env) = exec(Parse.commands(lines), Stack(), Empty)
     val pw = new PrintWriter(new File(target))
-    stack.xs.foreach(line => pw.write(line.toString))
+    stack.xs.foreach(line => pw.write(line.toString + '\n'))
     pw.close
   }
 

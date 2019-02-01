@@ -8,10 +8,17 @@ $ cd root of project
 $ sbt
 stb:cs305> test
 stb:cs305> console
-scala> import io.github.mapogolion.cs305.buffalo.Main
-scala> Main.channel("./resources/input.txt", "./resources/output.txt")
+scala> import io.github.mapogolions.cs305.buffalo.Main
+scala> Main.channel("./resources/src/factorial.txt", "./resources/bin/factorial.txt")
+scala> Main.channel("./resources/src/your-file", "./resources/bin/your-file")
 ```
 Enter `:quit` for terminated session
+
+### Examples
+- [factorial](./resources/src/factorial.txt)
+- [high order function](./resources/src/hoc.txt)
+- [variable shadowing](./resources/src/shadowing.txt)
+- [static scope](./resources/src/static-scope.txt)
 
 TODO: add description
 ## sbt project compiled with Dotty
