@@ -21,5 +21,10 @@ enum Vals { self =>
   case BOOL(val content: Boolean)
   case STR(val content: String)
   case ID(val content: String)
-  case CLOSURE(val name: String, arg: String, body: List[Commands], ctx: Env)
+  case CLOSURE(
+    val name: String, 
+    val arg: String, 
+    val body: List[Commands], 
+    val ctx: Env
+  )
 }
