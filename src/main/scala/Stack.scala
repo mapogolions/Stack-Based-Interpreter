@@ -65,31 +65,31 @@ class Stack(val xs: List[Vals]) {
   // binary
   def swap(env: Env) = xs match {
     case a :: b :: t => Stack(b :: a :: t) -> env
-    case _ => Stack(ERROR :: xs) -> env
+    case _           => Stack(ERROR :: xs) -> env
   }
 
   def binary(f: ((Vals, Vals)) => Vals) = xs match {
     case a :: b :: t if (f(a -> b) != ERROR) => Stack(f(a -> b) :: t)
-    case _ => Stack(ERROR :: xs)
+    case _                                   => Stack(ERROR :: xs)
   }
 
   def binaryBool(f: (Boolean, Boolean) => Vals, env: Env) = binary {
     (a, b) => (a, b) match {
-      case (BOOL(v1), BOOL(v2)) => f(v1, v2)
+      case (BOOL(v1), BOOL(v2))   => f(v1, v2)
       case (ID(name1), ID(name2)) =>
         (env.get(name1), env.get(name2)) match {
           case (Some(BOOL(v1)), Some(BOOL(v2))) => f(v1, v2)
-          case _ => ERROR
+          case _                                => ERROR
         }
       case (ID(name), BOOL(v2)) =>
         env.get(name) match {
           case Some(BOOL(v1)) => f(v1, v2)
-          case _ => ERROR
+          case _              => ERROR
         }
       case (BOOL(v1), ID(name)) =>
         env.get(name) match {
           case Some(BOOL(v2)) => f(v1, v2)
-          case _ => ERROR
+          case _              => ERROR
         }
       case _ => ERROR
     }
@@ -104,17 +104,17 @@ class Stack(val xs: List[Vals]) {
       case (ID(name1), ID(name2)) =>
         (env.get(name1), env.get(name2)) match {
           case (Some(INT(a)), Some(INT(b))) => f(a, b)
-          case _ => ERROR
+          case _                            => ERROR
         }
       case (ID(name), INT(v2)) =>
         env.get(name) match {
           case Some(INT(v1)) => f(v1, v2)
-          case _ => ERROR
+          case _             => ERROR
         }
       case (INT(v1), ID(name)) =>
         env.get(name) match {
           case Some(INT(v2)) => f(v1, v2)
-          case _ => ERROR
+          case _             => ERROR
         }
       case _ => ERROR
     }
