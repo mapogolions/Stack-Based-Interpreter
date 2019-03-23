@@ -20,7 +20,6 @@ Enter `:quit` for terminated session
 - [variable shadowing](./resources/src/shadowing.txt)
 - [static scope](./resources/src/static-scope.txt)
 
-TODO: add description
 ## sbt project compiled with Dotty
 
 ### Usage
