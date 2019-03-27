@@ -6,13 +6,16 @@
 $ git clone ...
 $ cd root of project
 $ sbt
-stb:cs305> test
-stb:cs305> console
+sbt:cs305> test
+sbt:cs305> console
 scala> import io.github.mapogolions.cs305.buffalo.Main
 scala> Main.channel("./resources/src/factorial.txt", "./resources/bin/factorial.txt")
 scala> Main.channel("./resources/src/your-file", "./resources/bin/your-file")
 ```
-Enter `:quit` for terminated session
+
+To get out of `sbt:cs305`, type `exit`
+
+To get out of `scala`, type `:quit`
 
 ### Examples
 - [factorial](./resources/src/factorial.txt)
