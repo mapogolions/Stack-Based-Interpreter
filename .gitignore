@@ -1,0 +1,5 @@
+build.sbt
+.dotty*
+project/project
+project/target
+target/
