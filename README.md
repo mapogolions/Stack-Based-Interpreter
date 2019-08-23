@@ -1,4 +1,6 @@
-## Language Interpreter Design (CSE 305 Buffalo)
+## [Deprecated] Language Interpreter Design (CSE 305 Buffalo)
+
+It will be rewritten in the future 
 
 ### How to use
 
