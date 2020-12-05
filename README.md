@@ -1,5 +1,7 @@
 ## [Deprecated] Language Interpreter Design (CSE 305 Buffalo)
 
+[I'm sharing with you everything that can help you to understand what the hell is going on here](./CSE305Interpreter.pdf)
+
 ### How to use
 
 ```sh
